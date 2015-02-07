@@ -1,0 +1,128 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.almasb</groupId>
+	<artifactId>maze3d</artifactId>
+	<version>dev</version>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<!-- create jar with unpacked dependencies -->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.almasb.maze.MazeMain</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<finalName>${project.artifactId}</finalName>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>make-executable-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<!-- make mvn exec:java the run command -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>java</executable>
+					<mainClass>com.almasb.maze.MazeMain</mainClass>
+				</configuration>
+			</plugin>
+
+		</plugins>
+		<resources>
+			<resource>
+				<directory>assets/</directory>
+				<targetPath>assets/</targetPath>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-core</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-desktop</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-lwjgl</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-jbullet</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+		<!-- Loader plugins for OgreXML and jME-XML -->
+
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-plugins</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+		<!-- Loader for jogg audio files -->
+
+		<dependency>
+			<groupId>com.jme3</groupId>
+			<artifactId>jme3-jogg</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+
+	</dependencies>
+
+	<!-- jME3 repo -->
+
+	<repositories>
+		<repository>
+			<id>jME3</id>
+			<url>http://updates.jmonkeyengine.org/maven/</url>
+		</repository>
+	</repositories>
+</project>
