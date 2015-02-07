@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 public final class AppProperties {
 
     private static final ResourceBundle RESOURCES = ResourceBundle
-            .getBundle("com.almasb.maze.app");
+            .getBundle("assets.app");
 
     public static String getVersion() {
         try {
