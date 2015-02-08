@@ -17,3 +17,6 @@ dependency-reduced-pom.xml
 
 # logs #
 *.log
+
+# native libs #
+*.dll
