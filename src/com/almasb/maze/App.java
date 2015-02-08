@@ -11,6 +11,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.font.BitmapText;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -40,6 +41,9 @@ public class App extends SimpleApplication {
     private Node coinsNode;
     private Spatial theTree;
 
+    private String message = "";
+    private BitmapText textCoins, textMessage;
+
     @Override
     public void simpleInitApp() {
         registerAssetsLocation();
@@ -52,11 +56,18 @@ public class App extends SimpleApplication {
         int mazeSize = 10;
         // half wall size, so 6*2 = 12
         int wallSize = 6;
+        /*
+         * maze center is then ((mazeSize / 2) * wallSize * 2, 0, (mazeSize / 2) * wallSize * 2 + wallSize)
+         * mazeSize / 2 can be replaced by any arbitrary cell value [0..mazeSize-1]
+         * to obtain the center point in cell
+         */
 
         initFloor(mazeSize, wallSize);
         initMaze(mazeSize, wallSize);
         initPlayer(mazeSize, wallSize);
         initObjects(mazeSize, wallSize);
+
+        initGUI();
     }
 
     private void registerAssetsLocation() {
@@ -74,8 +85,14 @@ public class App extends SimpleApplication {
                 if (name.equals("PickUpCoin")) {
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-                    ray.setLimit(100);
+                    ray.setLimit(50);
 
+                    /*
+                     * Note: we should technically check collision
+                     * with all collidables in the world like walls
+                     * and get closest collision and check if it's a "coin"
+                     * but for simple pre-alpha demo this is sufficient
+                     */
                     coinsNode.collideWith(ray, results);
 
                     if (results.size() > 0) {
@@ -83,11 +100,11 @@ public class App extends SimpleApplication {
                         Geometry coin = closest.getGeometry();
 
                         coinsNode.detachChild(coin);
-                        System.out.println("Picked up a coin");
+                        message = "Picked up a coin!";
 
                         if (coinsNode.getQuantity() == 0) {
                             rootNode.attachChild(theTree);
-                            System.out.println("The teleportation tree has spawned in the center of the maze");
+                            message = "The teleportation tree has spawned in the center of the maze";
                         }
                     }
                 }
@@ -96,12 +113,12 @@ public class App extends SimpleApplication {
                     if (coinsNode.getQuantity() == 0) {
                         CollisionResults results = new CollisionResults();
                         Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-                        ray.setLimit(100);
+                        ray.setLimit(50);
 
                         theTree.collideWith(ray, results);
 
                         if (results.size() > 0) {
-                            System.out.println("You have completed the demo");
+                            message = "You have completed the demo!";
                         }
                     }
                 }
@@ -243,7 +260,7 @@ public class App extends SimpleApplication {
         for (int i = 0; i < 5; i++) {
             Sphere coinShape = new Sphere(10, 10, 0.2f);
             Geometry coinGeo = new Geometry("Coin", coinShape);
-            coinGeo.setLocalTranslation(random.nextInt(mazeSize) * wallSize, 0.2f, random.nextInt(mazeSize) * wallSize + wallSize);
+            coinGeo.setLocalTranslation(random.nextInt(mazeSize) * wallSize * 2, 0.2f, random.nextInt(mazeSize) * wallSize * 2 + wallSize);
             coinGeo.setShadowMode(ShadowMode.CastAndReceive);
 
             Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -264,11 +281,33 @@ public class App extends SimpleApplication {
         theTree.setShadowMode(ShadowMode.CastAndReceive);
     }
 
+    private void initGUI() {
+        guiNode.detachAllChildren();
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+
+        textCoins = new BitmapText(guiFont, false);
+        textCoins.setSize(guiFont.getCharSet().getRenderedSize());
+        textCoins.setLocalTranslation(50, 700 - textCoins.getLineHeight(), 0);
+        guiNode.attachChild(textCoins);
+
+        textMessage = new BitmapText(guiFont, false);
+        textMessage.setSize(guiFont.getCharSet().getRenderedSize());
+        textMessage.setLocalTranslation(640 - 150, textMessage.getLineHeight(), 0);
+        guiNode.attachChild(textMessage);
+    }
+
+    private void updateGUI() {
+        textCoins.setText("Coins Left: " + coinsNode.getQuantity());
+        textMessage.setText(message);
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         player.onUpdate();
 
         flashlight.setDirection(cam.getDirection());
         flashlight.setPosition(cam.getLocation());
+
+        updateGUI();
     }
 }
