@@ -38,6 +38,7 @@ public class App extends SimpleApplication {
     private SpotLight flashlight;
 
     private Node coinsNode;
+    private Spatial theTree;
 
     @Override
     public void simpleInitApp() {
@@ -65,6 +66,7 @@ public class App extends SimpleApplication {
 
     private void initInput() {
         inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
         inputManager.addListener(new AnalogListener() {
             @Override
@@ -72,9 +74,7 @@ public class App extends SimpleApplication {
                 if (name.equals("PickUpCoin")) {
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-
-                    // TODO: possibly need to set limit to ray
-                    // ray.setLimit(100);
+                    ray.setLimit(100);
 
                     coinsNode.collideWith(ray, results);
 
@@ -84,10 +84,29 @@ public class App extends SimpleApplication {
 
                         coinsNode.detachChild(coin);
                         System.out.println("Picked up a coin");
+
+                        if (coinsNode.getQuantity() == 0) {
+                            rootNode.attachChild(theTree);
+                            System.out.println("The teleportation tree has spawned in the center of the maze");
+                        }
+                    }
+                }
+
+                if (name.equals("ActivateTree")) {
+                    if (coinsNode.getQuantity() == 0) {
+                        CollisionResults results = new CollisionResults();
+                        Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+                        ray.setLimit(100);
+
+                        theTree.collideWith(ray, results);
+
+                        if (results.size() > 0) {
+                            System.out.println("You have completed the demo");
+                        }
                     }
                 }
             }
-        }, "PickUpCoin");
+        }, "PickUpCoin", "ActivateTree");
     }
 
     private void initLight() {
@@ -224,7 +243,7 @@ public class App extends SimpleApplication {
         for (int i = 0; i < 5; i++) {
             Sphere coinShape = new Sphere(10, 10, 0.2f);
             Geometry coinGeo = new Geometry("Coin", coinShape);
-            coinGeo.setLocalTranslation(random.nextInt(mazeSize+1) * wallSize, 0.2f, random.nextInt(mazeSize+1) * wallSize + wallSize);
+            coinGeo.setLocalTranslation(random.nextInt(mazeSize) * wallSize, 0.2f, random.nextInt(mazeSize) * wallSize + wallSize);
             coinGeo.setShadowMode(ShadowMode.CastAndReceive);
 
             Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -238,6 +257,11 @@ public class App extends SimpleApplication {
             coinsNode.attachChild(coinGeo);
         }
         rootNode.attachChild(coinsNode);
+
+        theTree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
+        // center of the maze
+        theTree.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
+        theTree.setShadowMode(ShadowMode.CastAndReceive);
     }
 
     @Override
