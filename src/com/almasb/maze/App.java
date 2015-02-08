@@ -47,6 +47,7 @@ public class App extends SimpleApplication {
     private BitmapText textCoins, textMessage;
 
     private float footstepsTime = 0, footstepsNextTime = 1;
+    private Vector3f footstepsPosition = new Vector3f();
     private AudioNode audioFootsteps;
 
     @Override
@@ -132,7 +133,7 @@ public class App extends SimpleApplication {
 
         flashlight = new SpotLight();
         flashlight.setColor(ColorRGBA.White.mult(1.5f));
-        flashlight.setSpotRange(75);
+        flashlight.setSpotRange(55);
         flashlight.setSpotInnerAngle(5 * FastMath.DEG_TO_RAD);
         flashlight.setSpotOuterAngle(15 * FastMath.DEG_TO_RAD);
         rootNode.addLight(flashlight);
@@ -312,6 +313,22 @@ public class App extends SimpleApplication {
         textMessage.setText(message);
     }
 
+    private void updateAudio(float tpf) {
+        footstepsTime += tpf;
+        if (footstepsTime > footstepsNextTime) {
+            footstepsPosition.setX(FastMath.nextRandomFloat());
+            footstepsPosition.setY(FastMath.nextRandomFloat());
+            footstepsPosition.setZ(FastMath.nextRandomFloat());
+            footstepsPosition.multLocal(100, 2, 100);
+            footstepsPosition.subtractLocal(50, 1, 50);
+
+            audioFootsteps.setLocalTranslation(footstepsPosition);
+            audioFootsteps.playInstance();
+            footstepsTime = 0;
+            footstepsNextTime = FastMath.nextRandomFloat() * 20 + 0.5f;
+        }
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         player.onUpdate();
@@ -320,20 +337,6 @@ public class App extends SimpleApplication {
         flashlight.setPosition(cam.getLocation());
 
         updateGUI();
-
-        footstepsTime += tpf;
-        if (footstepsTime > footstepsNextTime) {
-            Vector3f v = new Vector3f();
-            v.setX(FastMath.nextRandomFloat());
-            v.setY(FastMath.nextRandomFloat());
-            v.setZ(FastMath.nextRandomFloat());
-            v.multLocal(40, 2, 40);
-            v.subtractLocal(20, 1, 20);
-
-            audioFootsteps.setLocalTranslation(v);
-            audioFootsteps.playInstance();
-            footstepsTime = 0;
-            footstepsNextTime = FastMath.nextRandomFloat() * 20 + 0.5f;
-        }
+        updateAudio(tpf);
     }
 }
