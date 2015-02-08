@@ -1,5 +1,7 @@
 package com.almasb.maze;
 
+import java.util.Random;
+
 import com.almasb.maze.MazeGenerator.MazeCell;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.UrlLocator;
@@ -7,17 +9,24 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.TangentBinormalGenerator;
 
@@ -28,10 +37,13 @@ public class App extends SimpleApplication {
 
     private SpotLight flashlight;
 
+    private Node coinsNode;
+
     @Override
     public void simpleInitApp() {
         registerAssetsLocation();
 
+        initInput();
         initLight();
         initPhysics();
 
@@ -43,11 +55,39 @@ public class App extends SimpleApplication {
         initFloor(mazeSize, wallSize);
         initMaze(mazeSize, wallSize);
         initPlayer(mazeSize, wallSize);
+        initObjects(mazeSize, wallSize);
     }
 
     private void registerAssetsLocation() {
         assetManager.registerLocator(getClass().getResource("/assets/").toExternalForm(),
                 UrlLocator.class);
+    }
+
+    private void initInput() {
+        inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+
+        inputManager.addListener(new AnalogListener() {
+            @Override
+            public void onAnalog(String name, float value, float tpf) {
+                if (name.equals("PickUpCoin")) {
+                    CollisionResults results = new CollisionResults();
+                    Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+
+                    // TODO: possibly need to set limit to ray
+                    // ray.setLimit(100);
+
+                    coinsNode.collideWith(ray, results);
+
+                    if (results.size() > 0) {
+                        CollisionResult closest = results.getClosestCollision();
+                        Geometry coin = closest.getGeometry();
+
+                        coinsNode.detachChild(coin);
+                        System.out.println("Picked up a coin");
+                    }
+                }
+            }
+        }, "PickUpCoin");
     }
 
     private void initLight() {
@@ -175,6 +215,29 @@ public class App extends SimpleApplication {
         physicsState.getPhysicsSpace().add(player);
 
         flyCam.setMoveSpeed(100);
+    }
+
+    private void initObjects(int mazeSize, int wallSize) {
+        coinsNode = new Node("Coins");
+
+        Random random = new Random();
+        for (int i = 0; i < 5; i++) {
+            Sphere coinShape = new Sphere(10, 10, 0.2f);
+            Geometry coinGeo = new Geometry("Coin", coinShape);
+            coinGeo.setLocalTranslation(random.nextInt(mazeSize+1) * wallSize, 0.2f, random.nextInt(mazeSize+1) * wallSize + wallSize);
+            coinGeo.setShadowMode(ShadowMode.CastAndReceive);
+
+            Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+            mat.setBoolean("UseMaterialColors", true);
+            mat.setColor("Diffuse", ColorRGBA.Yellow);
+            mat.setColor("Ambient", ColorRGBA.Yellow);
+            mat.setColor("Specular", ColorRGBA.White);
+            mat.setFloat("Shininess", 8);
+            coinGeo.setMaterial(mat);
+
+            coinsNode.attachChild(coinGeo);
+        }
+        rootNode.attachChild(coinsNode);
     }
 
     @Override
