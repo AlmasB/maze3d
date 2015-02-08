@@ -5,6 +5,8 @@ import java.util.Random;
 import com.almasb.maze.MazeGenerator.MazeCell;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.UrlLocator;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.Environment;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -22,6 +24,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -43,6 +46,9 @@ public class App extends SimpleApplication {
 
     private String message = "";
     private BitmapText textCoins, textMessage;
+
+    private float footstepsTime = 0, footstepsNextTime = 1;
+    private AudioNode audioFootsteps;
 
     @Override
     public void simpleInitApp() {
@@ -67,6 +73,7 @@ public class App extends SimpleApplication {
         initPlayer(mazeSize, wallSize);
         initObjects(mazeSize, wallSize);
 
+        initAudio();
         initGUI();
     }
 
@@ -281,6 +288,18 @@ public class App extends SimpleApplication {
         theTree.setShadowMode(ShadowMode.CastAndReceive);
     }
 
+    private void initAudio() {
+        audioRenderer.setEnvironment(Environment.Cavern);
+
+        AudioNode bgm = new AudioNode(assetManager, "Sound/Environment/bgm.ogg", false);
+        bgm.setPositional(false);
+        bgm.setLooping(true);
+        bgm.setVolume(0.3f);
+        bgm.play();
+
+        audioFootsteps = new AudioNode(assetManager, "Sound/Effects/Foot_steps.ogg");
+    }
+
     private void initGUI() {
         guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
@@ -309,5 +328,20 @@ public class App extends SimpleApplication {
         flashlight.setPosition(cam.getLocation());
 
         updateGUI();
+
+        footstepsTime += tpf;
+        if (footstepsTime > footstepsNextTime) {
+            Vector3f v = new Vector3f();
+            v.setX(FastMath.nextRandomFloat());
+            v.setY(FastMath.nextRandomFloat());
+            v.setZ(FastMath.nextRandomFloat());
+            v.multLocal(40, 2, 40);
+            v.subtractLocal(20, 1, 20);
+
+            audioFootsteps.setLocalTranslation(v);
+            audioFootsteps.playInstance();
+            footstepsTime = 0;
+            footstepsNextTime = FastMath.nextRandomFloat() * 20 + 0.5f;
+        }
     }
 }
