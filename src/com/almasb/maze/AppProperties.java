@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 public final class AppProperties {
 
     private static final ResourceBundle RESOURCES = ResourceBundle
-            .getBundle("assets.app");
+            .getBundle("props.app");
 
     public static String getVersion() {
         try {

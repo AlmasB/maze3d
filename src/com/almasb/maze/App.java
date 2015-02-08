@@ -4,7 +4,6 @@ import java.util.Random;
 
 import com.almasb.maze.MazeGenerator.MazeCell;
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.plugins.UrlLocator;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.Environment;
 import com.jme3.bullet.BulletAppState;
@@ -52,8 +51,6 @@ public class App extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        registerAssetsLocation();
-
         initInput();
         initLight();
         initPhysics();
@@ -75,11 +72,6 @@ public class App extends SimpleApplication {
 
         initAudio();
         initGUI();
-    }
-
-    private void registerAssetsLocation() {
-        assetManager.registerLocator(getClass().getResource("/assets/").toExternalForm(),
-                UrlLocator.class);
     }
 
     private void initInput() {
@@ -282,7 +274,7 @@ public class App extends SimpleApplication {
         }
         rootNode.attachChild(coinsNode);
 
-        theTree = assetManager.loadModel("Models/Tree/Tree.mesh.xml");
+        theTree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
         // center of the maze
         theTree.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
         theTree.setShadowMode(ShadowMode.CastAndReceive);
@@ -291,7 +283,7 @@ public class App extends SimpleApplication {
     private void initAudio() {
         audioRenderer.setEnvironment(Environment.Cavern);
 
-        AudioNode bgm = new AudioNode(assetManager, "Sound/Environment/bgm.ogg", false);
+        AudioNode bgm = new AudioNode(assetManager, "Sound/Environment/bgm.ogg");
         bgm.setPositional(false);
         bgm.setLooping(true);
         bgm.setVolume(0.3f);

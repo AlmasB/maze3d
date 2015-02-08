@@ -68,8 +68,13 @@
 		<resources>
 			<resource>
 				<directory>assets/</directory>
-				<targetPath>assets/</targetPath>
-				<filtering>true</filtering>
+				<targetPath>./</targetPath>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>props/</directory>
+				<targetPath>props/</targetPath>
+				<filtering>false</filtering>
 			</resource>
 		</resources>
 	</build>
