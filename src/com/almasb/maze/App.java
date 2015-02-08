@@ -7,10 +7,13 @@ import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Vector2f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.TangentBinormalGenerator;
 
 public class App extends SimpleApplication {
@@ -20,6 +23,7 @@ public class App extends SimpleApplication {
         registerAssetsLocation();
 
         initLight();
+        initFloor(10, 6);
         initMaze(10, 6);
     }
 
@@ -95,5 +99,36 @@ public class App extends SimpleApplication {
         }
 
         rootNode.attachChild(mazeNode);
+    }
+
+    private void initFloor(int mazeSize, int wallSize) {
+        Material mat = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
+        mat.getTextureParam("DiffuseMap").getTextureValue().setWrap(WrapMode.Repeat);
+        mat.getTextureParam("NormalMap").getTextureValue().setWrap(WrapMode.Repeat);
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.White);
+        mat.setColor("Ambient", ColorRGBA.White);
+        mat.setColor("Specular", ColorRGBA.White);
+        mat.setFloat("Shininess", 8);
+
+        Node floorNode = new Node("Floor");
+
+        Box floor = new Box(20, 1f, 20);
+        TangentBinormalGenerator.generate(floor);
+        floor.scaleTextureCoordinates(new Vector2f(10, 10));
+        Geometry floorGeom = new Geometry("Tile", floor);
+        floorGeom.setMaterial(mat);
+        floorGeom.setShadowMode(ShadowMode.Receive);
+
+        for (int i = 0; i < wallSize * 2 * mazeSize / 40 + 1; i++) {
+            for (int j = 0; j < wallSize * 2 * mazeSize / 40 + 1; j++) {
+                Spatial tile = floorGeom.clone();
+                tile.setLocalTranslation(20*j*2, -1, 20*i*2);
+
+                floorNode.attachChild(tile);
+            }
+        }
+
+        rootNode.attachChild(floorNode);
     }
 }
