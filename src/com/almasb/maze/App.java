@@ -13,6 +13,7 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
@@ -79,10 +80,10 @@ public class App extends SimpleApplication {
         inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
-        inputManager.addListener(new AnalogListener() {
+        inputManager.addListener(new ActionListener() {
             @Override
-            public void onAnalog(String name, float value, float tpf) {
-                if (name.equals("PickUpCoin")) {
+            public void onAction(String name, boolean isPressed, float tpf) {
+                if (name.equals("PickUpCoin") && isPressed) {
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
                     ray.setLimit(10);
@@ -109,7 +110,7 @@ public class App extends SimpleApplication {
                     }
                 }
 
-                if (name.equals("ActivateTree")) {
+                if (name.equals("ActivateTree") && isPressed) {
                     if (coinsNode.getQuantity() == 0) {
                         CollisionResults results = new CollisionResults();
                         Ray ray = new Ray(cam.getLocation(), cam.getDirection());
