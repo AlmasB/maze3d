@@ -2,6 +2,7 @@ package com.almasb.maze;
 
 import com.almasb.maze.MazeGenerator.MazeCell;
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.UrlLocator;
 import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -16,8 +17,15 @@ public class App extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        registerAssetsLocation();
+
         initLight();
         initMaze(10, 6);
+    }
+
+    private void registerAssetsLocation() {
+        assetManager.registerLocator(getClass().getResource("/assets/").toExternalForm(),
+                UrlLocator.class);
     }
 
     private void initLight() {
