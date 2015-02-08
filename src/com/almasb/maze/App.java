@@ -3,6 +3,10 @@ package com.almasb.maze;
 import com.almasb.maze.MazeGenerator.MazeCell;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.UrlLocator;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -18,6 +22,7 @@ import com.jme3.util.TangentBinormalGenerator;
 
 public class App extends SimpleApplication {
 
+    private BulletAppState physicsState;
     private Player player;
 
     @Override
@@ -25,9 +30,16 @@ public class App extends SimpleApplication {
         registerAssetsLocation();
 
         initLight();
-        initFloor(10, 6);
-        initMaze(10, 6);
-        initPlayer();
+        initPhysics();
+
+        // 10 x 10 = 100 square blocks
+        int mazeSize = 10;
+        // half wall size, so 6*2 = 12
+        int wallSize = 6;
+
+        initFloor(mazeSize, wallSize);
+        initMaze(mazeSize, wallSize);
+        initPlayer(mazeSize, wallSize);
     }
 
     private void registerAssetsLocation() {
@@ -39,6 +51,11 @@ public class App extends SimpleApplication {
         AmbientLight generalLight = new AmbientLight();
         generalLight.setColor(ColorRGBA.White.mult(1f));
         rootNode.addLight(generalLight);
+    }
+
+    private void initPhysics() {
+        physicsState = new BulletAppState();
+        stateManager.attach(physicsState);
     }
 
     private void initMaze(int mazeSize, int wallSize) {
@@ -101,6 +118,14 @@ public class App extends SimpleApplication {
             mazeNode.attachChild(wall);
         }
 
+        // register maze for collision
+        CollisionShape mazeShape = CollisionShapeFactory.createMeshShape(mazeNode);
+        RigidBodyControl mazePhysicsBody = new RigidBodyControl(mazeShape, 0);
+        mazeNode.addControl(mazePhysicsBody);
+
+        physicsState.getPhysicsSpace().add(mazePhysicsBody);
+
+        // add maze for render
         rootNode.attachChild(mazeNode);
     }
 
@@ -135,8 +160,10 @@ public class App extends SimpleApplication {
         rootNode.attachChild(floorNode);
     }
 
-    private void initPlayer() {
-        player = new Player(6, 3, 6, inputManager, cam);
+    private void initPlayer(int mazeSize, int wallSize) {
+        player = new Player(mazeSize * wallSize, 3, mazeSize * wallSize + wallSize, inputManager, cam);
+        physicsState.getPhysicsSpace().add(player);
+
         flyCam.setMoveSpeed(100);
     }
 
