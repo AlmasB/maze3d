@@ -85,7 +85,7 @@ public class App extends SimpleApplication {
                 if (name.equals("PickUpCoin")) {
                     CollisionResults results = new CollisionResults();
                     Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-                    ray.setLimit(50);
+                    ray.setLimit(10);
 
                     /*
                      * Note: we should technically check collision
@@ -113,7 +113,7 @@ public class App extends SimpleApplication {
                     if (coinsNode.getQuantity() == 0) {
                         CollisionResults results = new CollisionResults();
                         Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-                        ray.setLimit(50);
+                        ray.setLimit(10);
 
                         theTree.collideWith(ray, results);
 
@@ -275,7 +275,7 @@ public class App extends SimpleApplication {
         }
         rootNode.attachChild(coinsNode);
 
-        theTree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
+        theTree = assetManager.loadModel("Models/Tree/Tree.mesh.xml");
         // center of the maze
         theTree.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
         theTree.setShadowMode(ShadowMode.CastAndReceive);
