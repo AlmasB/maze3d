@@ -8,6 +8,7 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.light.AmbientLight;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -24,6 +25,8 @@ public class App extends SimpleApplication {
 
     private BulletAppState physicsState;
     private Player player;
+
+    private SpotLight flashlight;
 
     @Override
     public void simpleInitApp() {
@@ -48,9 +51,16 @@ public class App extends SimpleApplication {
     }
 
     private void initLight() {
-        AmbientLight generalLight = new AmbientLight();
-        generalLight.setColor(ColorRGBA.White.mult(1f));
-        rootNode.addLight(generalLight);
+        AmbientLight globalLight = new AmbientLight();
+        globalLight.setColor(ColorRGBA.White.mult(0.05f));
+        rootNode.addLight(globalLight);
+
+        flashlight = new SpotLight();
+        flashlight.setColor(ColorRGBA.White.mult(1.5f));
+        flashlight.setSpotRange(75);
+        flashlight.setSpotInnerAngle(5 * FastMath.DEG_TO_RAD);
+        flashlight.setSpotOuterAngle(15 * FastMath.DEG_TO_RAD);
+        rootNode.addLight(flashlight);
     }
 
     private void initPhysics() {
@@ -75,7 +85,7 @@ public class App extends SimpleApplication {
         wallMat.setColor("Diffuse", ColorRGBA.White);
         wallMat.setColor("Specular", ColorRGBA.White);
         wallMat.setColor("Ambient", ColorRGBA.White);
-        wallMat.setFloat("Shininess", 8f);  // [0,128]
+        wallMat.setFloat("Shininess", 32);  // [0,128]
 
         wallGeo.setMaterial(wallMat);
         wallGeo.setShadowMode(ShadowMode.CastAndReceive);
@@ -170,5 +180,8 @@ public class App extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         player.onUpdate();
+
+        flashlight.setDirection(cam.getDirection());
+        flashlight.setPosition(cam.getLocation());
     }
 }
