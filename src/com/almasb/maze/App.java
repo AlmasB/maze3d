@@ -18,6 +18,8 @@ import com.jme3.util.TangentBinormalGenerator;
 
 public class App extends SimpleApplication {
 
+    private Player player;
+
     @Override
     public void simpleInitApp() {
         registerAssetsLocation();
@@ -25,6 +27,7 @@ public class App extends SimpleApplication {
         initLight();
         initFloor(10, 6);
         initMaze(10, 6);
+        initPlayer();
     }
 
     private void registerAssetsLocation() {
@@ -130,5 +133,15 @@ public class App extends SimpleApplication {
         }
 
         rootNode.attachChild(floorNode);
+    }
+
+    private void initPlayer() {
+        player = new Player(6, 3, 6, inputManager, cam);
+        flyCam.setMoveSpeed(100);
+    }
+
+    @Override
+    public void simpleUpdate(float tpf) {
+        player.onUpdate();
     }
 }
