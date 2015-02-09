@@ -1,5 +1,7 @@
 package com.almasb.maze;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.almasb.maze.MazeGenerator.MazeCell;
@@ -43,6 +45,8 @@ public class App extends SimpleApplication {
     private Node coinsNode;
     private Spatial theTree;
 
+    private List<Zombie> enemies = new ArrayList<Zombie>();
+
     private String message = "";
     private BitmapText textCoins, textMessage;
 
@@ -70,6 +74,7 @@ public class App extends SimpleApplication {
         initMaze(mazeSize, wallSize);
         initPlayer(mazeSize, wallSize);
         initObjects(mazeSize, wallSize);
+        initEnemies(mazeSize, wallSize);
 
         initAudio();
         initGUI();
@@ -281,6 +286,17 @@ public class App extends SimpleApplication {
         theTree.setShadowMode(ShadowMode.CastAndReceive);
     }
 
+    private void initEnemies(int mazeSize, int wallSize) {
+        Node enemyModel = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        enemyModel.setLocalScale(0.5f);
+        Zombie zombie = new Zombie(mazeSize * wallSize, 2.4f, mazeSize * wallSize + wallSize, enemyModel);
+
+        physicsState.getPhysicsSpace().add(zombie);
+        rootNode.attachChild(enemyModel);
+
+        enemies.add(zombie);
+    }
+
     private void initAudio() {
         audioRenderer.setEnvironment(Environment.Cavern);
 
@@ -332,6 +348,7 @@ public class App extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         player.onUpdate();
+        enemies.forEach(enemy -> enemy.onUpdate(tpf));
 
         flashlight.setDirection(cam.getDirection());
         flashlight.setPosition(cam.getLocation());
