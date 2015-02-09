@@ -35,6 +35,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.shadow.EdgeFilteringMode;
+import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.TangentBinormalGenerator;
 
@@ -174,7 +176,7 @@ public class App extends SimpleApplication {
         wallMat.setFloat("Shininess", 32);  // [0,128]
 
         wallGeo.setMaterial(wallMat);
-        wallGeo.setShadowMode(ShadowMode.CastAndReceive);
+        wallGeo.setShadowMode(ShadowMode.Receive);
 
 
         for (int i = 0; i < mazeSize; i++) {
@@ -293,6 +295,7 @@ public class App extends SimpleApplication {
 
     private void initEnemies(int mazeSize, int wallSize) {
         Node enemyModel = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        enemyModel.setShadowMode(ShadowMode.CastAndReceive);
         enemyModel.setLocalScale(0.5f);
         Zombie zombie = new Zombie(mazeSize * wallSize, 2.4f, mazeSize * wallSize + wallSize, enemyModel);
 
@@ -322,11 +325,19 @@ public class App extends SimpleApplication {
         fire.setLocalTranslation(mazeSize * wallSize, 1f, mazeSize * wallSize + wallSize);
         rootNode.attachChild(fire);
 
+        // fire lighting
         PointLight fireLight = new PointLight();
         fireLight.setColor(ColorRGBA.Yellow.mult(1.3f));
         fireLight.setRadius(wallSize*2 - 2);
         fireLight.setPosition(fire.getLocalTranslation());
         rootNode.addLight(fireLight);
+
+        // shadows from the lighting above
+        PointLightShadowRenderer shadowRenderer = new PointLightShadowRenderer(assetManager, 512);
+        shadowRenderer.setLight(fireLight);
+        shadowRenderer.setShadowIntensity(0.5f);
+        shadowRenderer.setEdgeFilteringMode(EdgeFilteringMode.PCFPOISSON);
+        viewPort.addProcessor(shadowRenderer);
     }
 
     private void initAudio() {
