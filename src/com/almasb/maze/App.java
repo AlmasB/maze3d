@@ -14,11 +14,14 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapText;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
+import com.jme3.light.PointLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -75,6 +78,8 @@ public class App extends SimpleApplication {
         initPlayer(mazeSize, wallSize);
         initObjects(mazeSize, wallSize);
         initEnemies(mazeSize, wallSize);
+
+        initParticles(mazeSize, wallSize);
 
         initAudio();
         initGUI();
@@ -295,6 +300,33 @@ public class App extends SimpleApplication {
         rootNode.attachChild(enemyModel);
 
         enemies.add(zombie);
+    }
+
+    private void initParticles(int mazeSize, int wallSize) {
+        ParticleEmitter fire = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+        fire.setMaterial(mat);
+        fire.setImagesX(2); // because we have 2 by 2 texture image
+        fire.setImagesY(2);
+        fire.setEndColor(ColorRGBA.Red);
+        fire.setStartColor(ColorRGBA.Yellow);
+        fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+        fire.setStartSize(1.5f);
+        fire.setEndSize(0.1f);
+        fire.setGravity(0, 0, 0);
+        fire.setLowLife(1f);
+        fire.setHighLife(3f);
+        fire.getParticleInfluencer().setVelocityVariation(0.3f);
+
+        fire.setLocalTranslation(mazeSize * wallSize, 1f, mazeSize * wallSize + wallSize);
+        rootNode.attachChild(fire);
+
+        PointLight fireLight = new PointLight();
+        fireLight.setColor(ColorRGBA.Yellow.mult(1.3f));
+        fireLight.setRadius(wallSize*2 - 2);
+        fireLight.setPosition(fire.getLocalTranslation());
+        rootNode.addLight(fireLight);
     }
 
     private void initAudio() {
