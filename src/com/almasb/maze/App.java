@@ -293,7 +293,7 @@ public class App extends SimpleApplication {
 
         theTree = assetManager.loadModel("Models/Tree/Tree.mesh.j3o");
         // center of the maze
-        theTree.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
+        theTree.setLocalTranslation((mazeSize/2 - 1) * wallSize * 2, 0, mazeSize * wallSize + wallSize);
         theTree.setShadowMode(ShadowMode.CastAndReceive);
     }
 
