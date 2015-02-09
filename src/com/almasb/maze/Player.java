@@ -77,6 +77,7 @@ public class Player extends CharacterControl implements ActionListener {
         // disable walking up/down
         walkDir.setY(0);
         setWalkDirection(walkDir);
-        camera.setLocation(getPhysicsLocation());
+        if (!App.DEBUG)
+            camera.setLocation(getPhysicsLocation());
     }
 }

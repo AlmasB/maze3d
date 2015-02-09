@@ -15,4 +15,13 @@ public final class AppProperties {
             return "VERSION NOT FOUND";
         }
     }
+
+    public static boolean isDebugMode() {
+        try {
+            return Boolean.parseBoolean(RESOURCES.getString("debug"));
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 }

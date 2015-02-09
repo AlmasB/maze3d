@@ -42,6 +42,8 @@ import com.jme3.util.TangentBinormalGenerator;
 
 public class App extends SimpleApplication {
 
+    public static final boolean DEBUG = AppProperties.isDebugMode();
+
     private BulletAppState physicsState;
     private Player player;
 
@@ -61,6 +63,10 @@ public class App extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        if (DEBUG) {
+            flyCam.setMoveSpeed(100);
+        }
+
         initInput();
         initLight();
         initPhysics();
@@ -140,7 +146,7 @@ public class App extends SimpleApplication {
 
     private void initLight() {
         AmbientLight globalLight = new AmbientLight();
-        globalLight.setColor(ColorRGBA.White.mult(0.05f));
+        globalLight.setColor(ColorRGBA.White.mult(DEBUG ? 1 : 0.05f));
         rootNode.addLight(globalLight);
 
         flashlight = new SpotLight();
@@ -261,8 +267,6 @@ public class App extends SimpleApplication {
     private void initPlayer(int mazeSize, int wallSize) {
         player = new Player(mazeSize * wallSize, 3, mazeSize * wallSize + wallSize, inputManager, cam);
         physicsState.getPhysicsSpace().add(player);
-
-        flyCam.setMoveSpeed(100);
     }
 
     private void initObjects(int mazeSize, int wallSize) {
