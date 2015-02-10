@@ -17,8 +17,10 @@ import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapText;
+import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.PointLight;
@@ -53,7 +55,6 @@ public class App extends SimpleApplication {
     private App() {}
 
     private BulletAppState physicsState;
-    private Player player;
 
     private Node coinsNode;
     private Spatial theTree;
@@ -67,10 +68,16 @@ public class App extends SimpleApplication {
     private Vector3f footstepsPosition = new Vector3f();
     private AudioNode audioFootsteps;
 
+
+    private Node player;
+
     @Override
     public void simpleInitApp() {
         if (DEBUG) {
             flyCam.setMoveSpeed(100);
+        }
+        else {
+            flyCam.setZoomSpeed(0);
         }
 
         initInput();
@@ -149,6 +156,17 @@ public class App extends SimpleApplication {
 
             }
         }, "PickUpCoin", "ActivateTree");
+
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Back", new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addListener(new ActionListener() {
+            @Override
+            public void onAction(String name, boolean isPressed, float tpf) {
+                player.setUserData(name, isPressed);
+            }
+        }, "Left", "Right", "Forward", "Back");
     }
 
     private void initLight() {
@@ -167,7 +185,9 @@ public class App extends SimpleApplication {
 
     private void initPhysics() {
         physicsState = new BulletAppState();
+
         stateManager.attach(physicsState);
+        //physicsState.getPhysicsSpace().setGravity(new Vector3f());
     }
 
     private void initMaze(int mazeSize, int wallSize) {
@@ -269,12 +289,31 @@ public class App extends SimpleApplication {
             }
         }
 
+        // register maze for collision
+        CollisionShape floorShape = CollisionShapeFactory.createMeshShape(floorNode);
+        RigidBodyControl floorPhysicsBody = new RigidBodyControl(floorShape, 0);
+        floorNode.addControl(floorPhysicsBody);
+
+        physicsState.getPhysicsSpace().add(floorPhysicsBody);
+
+        // add floor for render
         rootNode.attachChild(floorNode);
     }
 
     private void initPlayer(int mazeSize, int wallSize) {
-        player = new Player(mazeSize * wallSize, 3, mazeSize * wallSize + wallSize, inputManager, cam);
+        player = new Node("Player");
+        player.setUserData("Left", false);
+        player.setUserData("Right", false);
+        player.setUserData("Forward", false);
+        player.setUserData("Back", false);
+        player.setUserData("RotateR", false);
+        player.setUserData("RotateL", false);
+        player.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
+
+        player.addControl(new PlayerControl());
+
         physicsState.getPhysicsSpace().add(player);
+        rootNode.attachChild(player);
     }
 
     private void initObjects(int mazeSize, int wallSize) {
@@ -408,7 +447,6 @@ public class App extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        player.onUpdate();
         enemies.forEach(enemy -> enemy.onUpdate(tpf));
 
         updateGUI();
