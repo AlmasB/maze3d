@@ -17,10 +17,8 @@ import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapText;
-import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.PointLight;
@@ -46,14 +44,16 @@ public class App extends SimpleApplication {
 
     public static final boolean DEBUG = AppProperties.isDebugMode();
 
+    private static final App instance = new App();
+
+    public static App getInstance() {
+        return instance;
+    }
+
+    private App() {}
+
     private BulletAppState physicsState;
     private Player player;
-
-    private SpotLight flashlight;
-    private boolean flashlightOn = false;
-    private int batteryLife = 100;
-    private float batteryTime = 0, batteryNextTime = 10;
-    private BitmapText textBattery;
 
     private Node coinsNode;
     private Spatial theTree;
@@ -61,7 +61,7 @@ public class App extends SimpleApplication {
     private List<Zombie> enemies = new ArrayList<Zombie>();
 
     private String message = "";
-    private BitmapText textCoins, textMessage;
+    private BitmapText textCoins, textMessage, textBattery;
 
     private float footstepsTime = 0, footstepsNextTime = 1;
     private Vector3f footstepsPosition = new Vector3f();
@@ -102,7 +102,6 @@ public class App extends SimpleApplication {
     private void initInput() {
         inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addMapping("Flashlight", new KeyTrigger(KeyInput.KEY_F));
 
         inputManager.addListener(new ActionListener() {
             @Override
@@ -148,20 +147,8 @@ public class App extends SimpleApplication {
                     }
                 }
 
-                if (name.equals("Flashlight") && isPressed) {
-                    if (flashlightOn) {
-                        flashlightOn = false;
-                        rootNode.removeLight(flashlight);
-                    }
-                    else {
-                        if (batteryLife > 0) {
-                            flashlightOn = true;
-                            rootNode.addLight(flashlight);
-                        }
-                    }
-                }
             }
-        }, "PickUpCoin", "ActivateTree", "Flashlight");
+        }, "PickUpCoin", "ActivateTree");
     }
 
     private void initLight() {
@@ -169,11 +156,13 @@ public class App extends SimpleApplication {
         globalLight.setColor(ColorRGBA.White.mult(DEBUG ? 1 : 0.05f));
         rootNode.addLight(globalLight);
 
-        flashlight = new SpotLight();
+        SpotLight flashlight = new SpotLight();
         flashlight.setColor(ColorRGBA.White.mult(1.5f));
         flashlight.setSpotRange(55);
         flashlight.setSpotInnerAngle(5 * FastMath.DEG_TO_RAD);
         flashlight.setSpotOuterAngle(15 * FastMath.DEG_TO_RAD);
+
+        rootNode.addControl(new FlashlightControl(flashlight, cam));
     }
 
     private void initPhysics() {
@@ -397,7 +386,7 @@ public class App extends SimpleApplication {
 
     private void updateGUI() {
         textCoins.setText("Coins Left: " + coinsNode.getQuantity());
-        textBattery.setText("Flashlight Battery: " + batteryLife + "%");
+        textBattery.setText("Flashlight Battery: " + rootNode.getControl(FlashlightControl.class).getBatteryLife() + "%");
         textMessage.setText(message);
     }
 
@@ -421,27 +410,6 @@ public class App extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         player.onUpdate();
         enemies.forEach(enemy -> enemy.onUpdate(tpf));
-
-        flashlight.setDirection(cam.getDirection());
-        flashlight.setPosition(cam.getLocation());
-
-        batteryTime += tpf;
-        if (batteryTime > batteryNextTime) {
-            if (flashlightOn) {
-                batteryLife--;
-            }
-            else {
-                if (batteryLife < 100)
-                    batteryLife++;
-            }
-            batteryTime = 0;
-            batteryNextTime = FastMath.nextRandomFloat() * batteryLife*0.1f;
-        }
-
-        if (batteryLife == 0) {
-            flashlightOn = false;
-            rootNode.removeLight(flashlight);
-        }
 
         updateGUI();
         updateAudio(tpf);

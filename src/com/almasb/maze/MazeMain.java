@@ -4,7 +4,7 @@ import com.jme3.system.AppSettings;
 
 public class MazeMain {
     public static void main(String[] args) {
-        App game = new App();
+        App game = App.getInstance();
 
         AppSettings settings = new AppSettings(true);
         settings.setResolution(1280, 720);
