@@ -64,11 +64,6 @@ public class App extends SimpleApplication {
     private String message = "";
     private BitmapText textCoins, textMessage, textBattery;
 
-    private float footstepsTime = 0, footstepsNextTime = 1;
-    private Vector3f footstepsPosition = new Vector3f();
-    private AudioNode audioFootsteps;
-
-
     private Node player;
 
     @Override
@@ -185,9 +180,7 @@ public class App extends SimpleApplication {
 
     private void initPhysics() {
         physicsState = new BulletAppState();
-
         stateManager.attach(physicsState);
-        //physicsState.getPhysicsSpace().setGravity(new Vector3f());
     }
 
     private void initMaze(int mazeSize, int wallSize) {
@@ -306,8 +299,6 @@ public class App extends SimpleApplication {
         player.setUserData("Right", false);
         player.setUserData("Forward", false);
         player.setUserData("Back", false);
-        player.setUserData("RotateR", false);
-        player.setUserData("RotateL", false);
         player.setLocalTranslation(mazeSize * wallSize, 0, mazeSize * wallSize + wallSize);
 
         player.addControl(new PlayerControl());
@@ -400,7 +391,10 @@ public class App extends SimpleApplication {
         bgm.setVolume(0.3f);
         bgm.play();
 
-        audioFootsteps = new AudioNode(assetManager, "Sound/Effects/Foot_steps.ogg");
+        AudioNode audioFootsteps = new AudioNode(assetManager, "Sound/Effects/Foot_steps.ogg");
+        audioFootsteps.addControl(new RandomSoundControl());
+        // we attach it to root so that control is registered
+        rootNode.attachChild(audioFootsteps);
     }
 
     private void initGUI() {
@@ -429,27 +423,10 @@ public class App extends SimpleApplication {
         textMessage.setText(message);
     }
 
-    private void updateAudio(float tpf) {
-        footstepsTime += tpf;
-        if (footstepsTime > footstepsNextTime) {
-            footstepsPosition.setX(FastMath.nextRandomFloat());
-            footstepsPosition.setY(FastMath.nextRandomFloat());
-            footstepsPosition.setZ(FastMath.nextRandomFloat());
-            footstepsPosition.multLocal(100, 2, 100);
-            footstepsPosition.subtractLocal(50, 1, 50);
-
-            audioFootsteps.setLocalTranslation(footstepsPosition);
-            audioFootsteps.playInstance();
-            footstepsTime = 0;
-            footstepsNextTime = FastMath.nextRandomFloat() * 20 + 0.5f;
-        }
-    }
-
     @Override
     public void simpleUpdate(float tpf) {
         enemies.forEach(enemy -> enemy.onUpdate(tpf));
 
         updateGUI();
-        updateAudio(tpf);
     }
 }
