@@ -1,10 +1,10 @@
 package com.almasb.maze;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import com.almasb.maze.MazeGenerator.MazeCell;
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.Environment;
@@ -58,8 +58,6 @@ public class App extends SimpleApplication {
 
     private Node coinsNode;
     private Spatial theTree;
-
-    private List<Zombie> enemies = new ArrayList<Zombie>();
 
     private String message = "";
     private BitmapText textCoins, textMessage, textBattery;
@@ -336,15 +334,28 @@ public class App extends SimpleApplication {
     }
 
     private void initEnemies(int mazeSize, int wallSize) {
-        Node enemyModel = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        enemyModel.setShadowMode(ShadowMode.CastAndReceive);
-        enemyModel.setLocalScale(0.5f);
-        Zombie zombie = new Zombie(mazeSize * wallSize, 2.4f, mazeSize * wallSize + wallSize, enemyModel);
+        Node zombieModel = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+
+        // adjust model for collisions
+        zombieModel.move(0, 2.5f, 0);
+        zombieModel.setLocalScale(0.5f);
+        zombieModel.setShadowMode(ShadowMode.CastAndReceive);
+
+        // set animation to loop in walk
+        AnimControl animControl = zombieModel.getControl(AnimControl.class);
+        AnimChannel channel = animControl.createChannel();
+        channel.setAnim("Walk");
+
+        Node zombie = new Node("zombie");
+        zombie.attachChild(zombieModel);
+        ZombieControl control = new ZombieControl();
+        zombie.addControl(control);
+
+        // place our node where we want
+        control.warp(new Vector3f(mazeSize * wallSize, 0f, mazeSize * wallSize + wallSize));
 
         physicsState.getPhysicsSpace().add(zombie);
-        rootNode.attachChild(enemyModel);
-
-        enemies.add(zombie);
+        rootNode.attachChild(zombie);
     }
 
     private void initParticles(int mazeSize, int wallSize) {
@@ -425,8 +436,6 @@ public class App extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        enemies.forEach(enemy -> enemy.onUpdate(tpf));
-
         updateGUI();
     }
 }
