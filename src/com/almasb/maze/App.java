@@ -91,9 +91,10 @@ public class App extends SimpleApplication {
         initMaze(mazeSize, wallSize);
         initPlayer(mazeSize, wallSize);
         initObjects(mazeSize, wallSize);
+
         initEnemies(mazeSize, wallSize);
 
-        initParticles(mazeSize, wallSize);
+        //initParticles(mazeSize, wallSize);
 
         initAudio();
         initGUI();
@@ -341,21 +342,28 @@ public class App extends SimpleApplication {
         zombieModel.setLocalScale(0.5f);
         zombieModel.setShadowMode(ShadowMode.CastAndReceive);
 
-        // set animation to loop in walk
-        AnimControl animControl = zombieModel.getControl(AnimControl.class);
-        AnimChannel channel = animControl.createChannel();
-        channel.setAnim("Walk");
+        // 4 enemies in 4 corners
+        for (int i = 0; i < 4; i++) {
+            Spatial zombieModelCopy = zombieModel.clone();
+            // set animation to loop in walk
+            AnimControl animControl = zombieModelCopy.getControl(AnimControl.class);
+            AnimChannel channel = animControl.createChannel();
+            channel.setAnim("Walk");
 
-        Node zombie = new Node("zombie");
-        zombie.attachChild(zombieModel);
-        ZombieControl control = new ZombieControl();
-        zombie.addControl(control);
+            Node zombie = new Node("zombie");
+            zombie.attachChild(zombieModelCopy);
+            ZombieControl control = new ZombieControl();
+            zombie.addControl(control);
 
-        // place our node where we want
-        control.warp(new Vector3f(mazeSize * wallSize, 0f, mazeSize * wallSize + wallSize));
+            int x = (i < 2) ? 0 : mazeSize - 1;
+            int z = (i % 2 == 0) ? 0 : mazeSize - 1;
 
-        physicsState.getPhysicsSpace().add(zombie);
-        rootNode.attachChild(zombie);
+            // place our node where we want
+            control.warp(new Vector3f(x * wallSize * 2, 0f, z * wallSize * 2 + wallSize));
+
+            physicsState.getPhysicsSpace().add(zombie);
+            rootNode.attachChild(zombie);
+        }
     }
 
     private void initParticles(int mazeSize, int wallSize) {
