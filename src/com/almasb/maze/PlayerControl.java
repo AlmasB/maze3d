@@ -11,14 +11,38 @@ public class PlayerControl extends BetterCharacterControl {
     private Vector3f camLeft = new Vector3f();
     private Vector3f walkDir = new Vector3f();
 
+    private int hitPoints = 100;
+    private float hitTimer = 0;
+    private boolean canTakeHit = true;
+
     public PlayerControl() {
         super(1f, 4.5f, 8f);
         camera = App.getInstance().getCamera();
     }
 
+    public int getHitPoints() {
+        return hitPoints;
+    }
+
+    public void takeHit() {
+        if (canTakeHit) {
+            hitPoints -= 10;
+            canTakeHit = false;
+        }
+    }
+
     @Override
     public void update(float tpf) {
         super.update(tpf);
+
+        if (!canTakeHit) {
+            hitTimer += tpf;
+            // ~ 1 second
+            if (hitTimer >= 1) {
+                canTakeHit = true;
+                hitTimer = 0;
+            }
+        }
 
         camLeft.set(camera.getLeft()).normalizeLocal().multLocal(10f);
         camDir.set(camera.getDirection()).normalizeLocal().multLocal(10f);

@@ -9,6 +9,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.Environment;
 import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
@@ -60,7 +61,7 @@ public class App extends SimpleApplication {
     private Spatial theTree;
 
     private String message = "";
-    private BitmapText textCoins, textMessage, textBattery;
+    private BitmapText textCoins, textMessage, textBattery, textHitPoints;
 
     private Node player;
 
@@ -180,6 +181,36 @@ public class App extends SimpleApplication {
     private void initPhysics() {
         physicsState = new BulletAppState();
         stateManager.attach(physicsState);
+
+        physicsState.getPhysicsSpace().addCollisionListener(event -> {
+            /*
+             * Note: we would explicitly check as follows if we didn't have
+             * references to objects or we were interested in actual objects.
+             * There is no need to do this here because we have player reference
+             * and we don't do anything with the zombie reference
+             */
+            Node zombie = null, player = null;
+
+            if ("Zombie".equals(event.getNodeA().getName())) {
+                zombie = (Node) event.getNodeA();
+            }
+
+            if ("Zombie".equals(event.getNodeB().getName())) {
+                zombie = (Node) event.getNodeB();
+            }
+
+            if ("Player".equals(event.getNodeA().getName())) {
+                player = (Node) event.getNodeA();
+            }
+
+            if ("Player".equals(event.getNodeB().getName())) {
+                player = (Node) event.getNodeB();
+            }
+
+            if (zombie != null && player != null) {
+                player.getControl(PlayerControl.class).takeHit();
+            }
+        });
     }
 
     private void initMaze(int mazeSize, int wallSize) {
@@ -245,6 +276,11 @@ public class App extends SimpleApplication {
         // register maze for collision
         CollisionShape mazeShape = CollisionShapeFactory.createMeshShape(mazeNode);
         RigidBodyControl mazePhysicsBody = new RigidBodyControl(mazeShape, 0);
+        // set collision group of maze to same as the floor
+        // means collision between floor and maze won't be checked
+        // while collision between maze and other objects will be
+        mazePhysicsBody.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+        mazePhysicsBody.setCollideWithGroups(PhysicsCollisionObject.COLLISION_GROUP_01);
         mazeNode.addControl(mazePhysicsBody);
 
         physicsState.getPhysicsSpace().add(mazePhysicsBody);
@@ -284,6 +320,11 @@ public class App extends SimpleApplication {
         // register maze for collision
         CollisionShape floorShape = CollisionShapeFactory.createMeshShape(floorNode);
         RigidBodyControl floorPhysicsBody = new RigidBodyControl(floorShape, 0);
+        // set collision group of floor to same as the maze
+        // means collision between floor and maze won't be checked
+        // while collision between floor and other objects will be
+        floorPhysicsBody.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+        floorPhysicsBody.setCollideWithGroups(PhysicsCollisionObject.COLLISION_GROUP_01);
         floorNode.addControl(floorPhysicsBody);
 
         physicsState.getPhysicsSpace().add(floorPhysicsBody);
@@ -350,7 +391,7 @@ public class App extends SimpleApplication {
             AnimChannel channel = animControl.createChannel();
             channel.setAnim("Walk");
 
-            Node zombie = new Node("zombie");
+            Node zombie = new Node("Zombie");
             zombie.attachChild(zombieModelCopy);
             ZombieControl control = new ZombieControl();
             zombie.addControl(control);
@@ -434,12 +475,18 @@ public class App extends SimpleApplication {
         textBattery.setSize(guiFont.getCharSet().getRenderedSize());
         textBattery.setLocalTranslation(50, 650 - textBattery.getLineHeight(), 0);
         guiNode.attachChild(textBattery);
+
+        textHitPoints = new BitmapText(guiFont, false);
+        textHitPoints.setSize(guiFont.getCharSet().getRenderedSize());
+        textHitPoints.setLocalTranslation(50, 600 - textHitPoints.getLineHeight(), 0);
+        guiNode.attachChild(textHitPoints);
     }
 
     private void updateGUI() {
         textCoins.setText("Coins Left: " + coinsNode.getQuantity());
         textBattery.setText("Flashlight Battery: " + rootNode.getControl(FlashlightControl.class).getBatteryLife() + "%");
         textMessage.setText(message);
+        textHitPoints.setText("Hit Points: " + player.getControl(PlayerControl.class).getHitPoints());
     }
 
     @Override
