@@ -345,6 +345,8 @@ public class App extends SimpleApplication {
 
         physicsState.getPhysicsSpace().add(player);
         rootNode.attachChild(player);
+
+        initGun();
     }
 
     private void initObjects(int mazeSize, int wallSize) {
@@ -373,6 +375,19 @@ public class App extends SimpleApplication {
         // center of the maze
         theTree.setLocalTranslation((mazeSize/2 - 1) * wallSize * 2, 0, mazeSize * wallSize + wallSize);
         theTree.setShadowMode(ShadowMode.CastAndReceive);
+    }
+
+    private void initGun() {
+        Spatial gun = assetManager.loadModel("Models/Gun/gun.obj");
+        gun.setLocalScale(0.01f);
+
+        AmbientLight light = new AmbientLight();
+        light.setColor(ColorRGBA.White.clone());
+        gun.addLight(light);
+
+        gun.addControl(new GunControl(player));
+
+        rootNode.attachChild(gun);
     }
 
     private void initEnemies(int mazeSize, int wallSize) {

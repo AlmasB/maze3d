@@ -3,6 +3,7 @@ package com.almasb.maze;
 import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.scene.Spatial;
 
 public class PlayerControl extends BetterCharacterControl {
 
