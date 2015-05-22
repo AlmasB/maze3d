@@ -22,9 +22,16 @@ public class GunControl extends AbstractControl {
     }
 
     public boolean shoot() {
-        numBullets--;
-        // TODO: impl
-        return true;
+        if (numBullets > 0) {
+            numBullets--;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void reload() {
+        numBullets = 10;
     }
 
     @Override

@@ -61,7 +61,8 @@ public class App extends SimpleApplication {
     private Spatial theTree;
 
     private String message = "";
-    private BitmapText textCoins, textMessage, textBattery, textHitPoints;
+    private BitmapText textCoins, textMessage, textBattery, textHitPoints,
+                        textBullets;
 
     private Node player;
     private Spatial gun;
@@ -170,12 +171,18 @@ public class App extends SimpleApplication {
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("Back", new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("Reload", new KeyTrigger(KeyInput.KEY_R));
         inputManager.addListener(new ActionListener() {
             @Override
             public void onAction(String name, boolean isPressed, float tpf) {
+                if ("Reload".equals(name) && isPressed) {
+                    gun.getControl(GunControl.class).reload();
+                    return;
+                }
+
                 player.setUserData(name, isPressed);
             }
-        }, "Left", "Right", "Forward", "Back");
+        }, "Left", "Right", "Forward", "Back", "Reload");
     }
 
     private void initLight() {
@@ -513,6 +520,11 @@ public class App extends SimpleApplication {
         textHitPoints.setSize(guiFont.getCharSet().getRenderedSize());
         textHitPoints.setLocalTranslation(50, 600 - textHitPoints.getLineHeight(), 0);
         guiNode.attachChild(textHitPoints);
+
+        textBullets = new BitmapText(guiFont, false);
+        textBullets.setSize(guiFont.getCharSet().getRenderedSize());
+        textBullets.setLocalTranslation(50, 550 - textBullets.getLineHeight(), 0);
+        guiNode.attachChild(textBullets);
     }
 
     private void updateGUI() {
@@ -520,6 +532,7 @@ public class App extends SimpleApplication {
         textBattery.setText("Flashlight Battery: " + rootNode.getControl(FlashlightControl.class).getBatteryLife() + "%");
         textMessage.setText(message);
         textHitPoints.setText("Hit Points: " + player.getControl(PlayerControl.class).getHitPoints());
+        textBullets.setText("Bullets: " + gun.getControl(GunControl.class).getNumBullets());
     }
 
     @Override
