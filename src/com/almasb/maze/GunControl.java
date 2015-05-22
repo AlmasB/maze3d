@@ -11,8 +11,20 @@ public class GunControl extends AbstractControl {
 
     private Node player;
 
+    private int numBullets = 10;
+
     public GunControl(Node player) {
         this.player = player;
+    }
+
+    public int getNumBullets() {
+        return numBullets;
+    }
+
+    public boolean shoot() {
+        numBullets--;
+        // TODO: impl
+        return true;
     }
 
     @Override

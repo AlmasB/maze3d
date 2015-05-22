@@ -64,6 +64,10 @@ public class App extends SimpleApplication {
     private BitmapText textCoins, textMessage, textBattery, textHitPoints;
 
     private Node player;
+    private Spatial gun;
+
+    private PointLight gunLight;
+    private long gunLightTime = 0;
 
     @Override
     public void simpleInitApp() {
@@ -102,8 +106,9 @@ public class App extends SimpleApplication {
     }
 
     private void initInput() {
-        inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
         inputManager.addListener(new ActionListener() {
             @Override
@@ -149,8 +154,17 @@ public class App extends SimpleApplication {
                     }
                 }
 
+                if (name.equals("Shoot") && isPressed) {
+                    boolean shot = gun.getControl(GunControl.class).shoot();
+                    if (shot) {
+                        gunLight.setPosition(gun.getLocalTranslation());
+
+                        rootNode.addLight(gunLight);
+                        gunLightTime = System.nanoTime();
+                    }
+                }
             }
-        }, "PickUpCoin", "ActivateTree");
+        }, "PickUpCoin", "ActivateTree", "Shoot");
 
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
@@ -176,6 +190,10 @@ public class App extends SimpleApplication {
         flashlight.setSpotOuterAngle(15 * FastMath.DEG_TO_RAD);
 
         rootNode.addControl(new FlashlightControl(flashlight, cam));
+
+        gunLight = new PointLight();
+        gunLight.setColor(ColorRGBA.Yellow.clone());
+        gunLight.setRadius(30);
     }
 
     private void initPhysics() {
@@ -378,7 +396,7 @@ public class App extends SimpleApplication {
     }
 
     private void initGun() {
-        Spatial gun = assetManager.loadModel("Models/Gun/gun.obj");
+        gun = assetManager.loadModel("Models/Gun/gun.obj");
         gun.setLocalScale(0.01f);
 
         AmbientLight light = new AmbientLight();
@@ -507,5 +525,9 @@ public class App extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         updateGUI();
+
+        if (System.nanoTime() - gunLightTime >= tpf * 1000000000) {
+            rootNode.removeLight(gunLight);
+        }
     }
 }
