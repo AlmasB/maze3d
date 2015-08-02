@@ -106,6 +106,8 @@ public class App extends SimpleApplication {
         initGUI();
     }
 
+    private AudioNode gunShot;
+
     private void initInput() {
         inputManager.addMapping("PickUpCoin", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         inputManager.addMapping("ActivateTree", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
@@ -158,6 +160,8 @@ public class App extends SimpleApplication {
                 if (name.equals("Shoot") && isPressed) {
                     boolean shot = gun.getControl(GunControl.class).shoot();
                     if (shot) {
+                        gunShot.playInstance();
+
                         gunLight.setPosition(gun.getLocalTranslation());
 
                         rootNode.addLight(gunLight);
@@ -495,6 +499,10 @@ public class App extends SimpleApplication {
         audioFootsteps.addControl(new RandomSoundControl());
         // we attach it to root so that control is registered
         rootNode.attachChild(audioFootsteps);
+
+        gunShot = new AudioNode(assetManager, "Sound/Effects/shot.ogg");
+        gunShot.setPositional(false);
+        rootNode.attachChild(gunShot);
     }
 
     private void initGUI() {
