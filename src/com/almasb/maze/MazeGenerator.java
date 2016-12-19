@@ -9,8 +9,7 @@ import java.util.Collections;
  * shamelessly borrowed from the ruby at
  * http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
  *
- * @author Almas Baimagambetov (ab607@uni.brighton.ac.uk)
- * @version 1.0
+ * @author Almas Baimagambetov (almaslvl@gmail.com)
  */
 public class MazeGenerator {
     private final int x;
