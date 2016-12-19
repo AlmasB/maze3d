@@ -134,8 +134,8 @@
 
 	<repositories>
 		<repository>
-			<id>jME3</id>
-			<url>http://updates.jmonkeyengine.org/maven/</url>
+			<id>com_jme3-repo</id>
+			<url>http://dl.bintray.com/jmonkeyengine/com.jme3</url>
 		</repository>
 	</repositories>
 </project>
